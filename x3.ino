@@ -5,14 +5,14 @@ int motor = 7;
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(7, OUTPUT);
+  pinMode(motor, OUTPUT);
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   digitalWrite(8, LOW);
   digitalWrite(9, HIGH);
   Serial.begin(9600);     // opens serial port, sets data rate to 9600 bps
   Serial.println("Please Input 0 - 255");
-  analogWrite(7, 0);
+  analogWrite(motor, 0);
 }
 
 void loop() {
@@ -22,7 +22,7 @@ void loop() {
     incomingByte = Serial.readString();
     int power = incomingByte.toInt();
     Serial.println(incomingByte);
-    analogWrite(7, power);
+    analogWrite(motor, power);
     Serial.println("DONE!!!");
   }
 
