@@ -22,14 +22,15 @@ void loop() {
   if (Serial.available() > 0) {
     // read the incoming byte:
     Serial.readStringUntil('#');
-    int strength = incomingByte.toInt();
     incomingByte = Serial.readStringUntil(',');
-    int happyTime = incomingByte.toInt();
+    int strength = incomingByte.toInt();
     String incomingByte = Serial.readStringUntil('#');
+    int happyTime = incomingByte.toInt();
     Serial.println(strength);
     Serial.println(happyTime);
     analogWrite(vibrator, strength);
     delay(happyTime);
+    analogWrite(vibrator, 0);
     Serial.println("DONE!!!");
   }
 
