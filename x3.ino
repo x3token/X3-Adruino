@@ -37,13 +37,15 @@ void setup() {
   digitalWrite(sagment_low_pin, LOW);
   digitalWrite(sagment_high_pin, HIGH);
 
+  analogWrite(vibrator_pin, 0);
+
   Serial.begin(serial_rate);     // opens serial port, sets data rate to 9600 bps
   Serial.println("Welcome to X3 Plesure Service");
   Serial.println("strength : 130 - 255");
   Serial.println("Time(ms)");
   Serial.println("Format for Input : #strength,time#");
   Serial.println("Waiting for input");
-  analogWrite(vibrator_pin, 0);
+
 
   display.point(POINT_ON);
 
