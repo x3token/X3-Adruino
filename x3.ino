@@ -16,10 +16,10 @@ TM1637 display(sagment_clk, sagment_dio);
 
 
 String incomingByte;
-int happyTime = 0;
+long happyTime = 0;
 int strength = 0;
-int happyTime1;
-int happyTime2;
+long happyTime1;
+long happyTime2;
 int heavenFloor;
 
 void setup() {
@@ -37,71 +37,112 @@ void setup() {
   digitalWrite(sagment_low_pin, LOW);
   digitalWrite(sagment_high_pin, HIGH);
 
-  analogWrite(vibrator_pin, 0);
+  vibrate(0);
 
   Serial.begin(serial_rate);     // opens serial port, sets data rate to 9600 bps
+
   Serial.println("Welcome to X3 Plesure Service");
   Serial.println("strength : 130 - 255");
   Serial.println("Time(ms)");
   Serial.println("Format for Input : #strength,time#");
-  Serial.println("Waiting for input");
-
+  Serial.println("Example : #255,2000#");
 
   display.point(POINT_ON);
 
   display.display(0,0);
-  display.display(1,1);
-  display.display(2,2);
-  display.display(3,3);
+  display.display(1,0);
+  display.display(2,15);
+  display.display(3,0);
+
 }
 
+void(* reset) (void) = 0; //declare reset function @ address 0
+
 void loop() {
+
+      display.display(0,0);
+      display.display(1,0);
+      display.display(2,15);
+      display.display(3,0);
+
   // put your main code here, to run repeatedly:
   if (Serial.available() > 0) {
 
     // read the incoming byte:
     Serial.readStringUntil('#');
+
+    //Read Strength
     incomingByte = Serial.readStringUntil(',');
-    int strength = incomingByte.toInt();
-    String incomingByte = Serial.readStringUntil('#');
-    int happyTime = incomingByte.toInt();
+    strength = incomingByte.toInt();
+
+    //Read happyTime
+    incomingByte = Serial.readStringUntil('#');
+    happyTime = atol(incomingByte.c_str());
+
+    Serial.print("Strength = ");
     Serial.println(strength);
+    Serial.print("happyTime = ");
     Serial.println(happyTime);
 
     happyTime = getSecond(happyTime);
 
-    analogWrite(vibrator_pin, strength);
+    vibrate(strength);
 
-    for (happyTime ; happyTime > 0 ; happyTime = happyTime - 1000){
+    heavenFloor = getHeavenFloor(strength);
 
-      heavenFloor = getHeavenFloor(strength);
-
-      happyTime1 = (happyTime / 10000) % 10;
-      happyTime2 = (happyTime / 1000) % 10;
-
-      Serial.println(happyTime);
-      Serial.println(happyTime1);
-      Serial.println(happyTime2);
-
-      display.display(0,happyTime1);
-      display.display(1,happyTime2);
-      display.display(2,0);
-      display.display(3,heavenFloor);
-
-      delay(1000);
+    if (heavenFloor < 1 || heavenFloor > 7){
+      display.display(0,14);
+      display.display(1,14);
+      display.display(2,14);
+      display.display(3,14);
+      Serial.println("ERROR ! ! !");
+      delay(3000);
+      reset();
     }
 
-      display.display(0,0);
-      display.display(1,0);
-      display.display(2,0);
-      display.display(3,0);
+    if (happyTime < 1 || happyTime > 99000) {
+      display.display(0,14);
+      display.display(1,14);
+      display.display(2,14);
+      display.display(3,14);
+      Serial.println("ERROR ! ! !");
+      delay(3000);
+      reset();
+    }
 
-    analogWrite(vibrator_pin, 0);
+    display.display(2,15);
+    display.display(3,heavenFloor);
+
+    for (happyTime ; happyTime > long(0) ; happyTime -= long(1000)){
+
+
+      int x = getFirstPosition(happyTime);
+      int y = getSecondPosition(happyTime);
+
+      display.display(0,x);
+      display.display(1,y);
+
+
+      Serial.print("Time Left = ");
+      Serial.println(happyTime);
+      Serial.print("happyTime = ");
+      Serial.print(x);
+      Serial.println(y);
+      Serial.print("heavenFloor = ");
+      Serial.println(heavenFloor);
+
+      delay(1000);
+
+    }
+
+    vibrate(0);
     Serial.println("DONE");
   }
+
 }
 
 int getHeavenFloor(int strength) {
+
     if (strength > 230) {return 7;}
     if (strength > 210) {return 6;}
     if (strength > 190) {return 5;}
@@ -111,7 +152,23 @@ int getHeavenFloor(int strength) {
     return 1;
   }
 
-int getSecond(int time) {
+long getSecond(long time) {
+
        time /=1000;
        return floor(time + 0.5) * 1000;  
+
 }
+
+void vibrate(int strength) {
+  analogWrite(vibrator_pin, strength);
+}
+
+int getFirstPosition(long number) {
+  return int((number / 10000) % 10);
+}
+
+int getSecondPosition(long number) {
+  return int((number / 1000) % 10);
+}
+
+
