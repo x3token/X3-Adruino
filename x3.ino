@@ -11,10 +11,10 @@
 #define sagment_clk 3
 #define sagment_dio 2
 
-//TM1637
+//Set TM1637 Pin
 TM1637 display(sagment_clk, sagment_dio);
 
-
+//Initial
 String incomingByte;
 long happyTime = 0;
 int strength = 0;
@@ -42,11 +42,14 @@ void setup() {
   Serial.begin(serial_rate);     // opens serial port, sets data rate to 9600 bps
 
   Serial.println("Welcome to X3 Plesure Service");
-  Serial.println("strength : 130 - 255");
+  Serial.println("Strength : 130 - 255");
   Serial.println("Time(ms)");
   Serial.println("Format for Input : #strength,time#");
   Serial.println("Example : #255,2000#");
+  Serial.println("Waiting for Input . . . .");
+  
 
+  //Display Zone
   display.point(POINT_ON);
 
   display.display(0,0);
@@ -86,29 +89,19 @@ void loop() {
 
     happyTime = getSecond(happyTime);
 
-    vibrate(strength);
-
     heavenFloor = getHeavenFloor(strength);
 
-    if (heavenFloor < 1 || heavenFloor > 7){
-      display.display(0,14);
-      display.display(1,14);
-      display.display(2,14);
-      display.display(3,14);
-      Serial.println("ERROR ! ! !");
-      delay(3000);
+    if (strength < 1 || strength > 255){
+      throwError();
       reset();
     }
 
     if (happyTime < 1 || happyTime > 99000) {
-      display.display(0,14);
-      display.display(1,14);
-      display.display(2,14);
-      display.display(3,14);
-      Serial.println("ERROR ! ! !");
-      delay(3000);
+      throwError();
       reset();
     }
+
+    vibrate(strength);
 
     display.display(2,15);
     display.display(3,heavenFloor);
@@ -124,7 +117,8 @@ void loop() {
 
 
       Serial.print("Time Left = ");
-      Serial.println(happyTime);
+      Serial.print(happyTime / 1000);
+      Serial.println(" seconds");
       Serial.print("happyTime = ");
       Serial.print(x);
       Serial.println(y);
@@ -137,6 +131,7 @@ void loop() {
 
     vibrate(0);
     Serial.println("DONE");
+    Serial.println("Waiting for Input . . . .");
   }
 
 }
@@ -171,4 +166,13 @@ int getSecondPosition(long number) {
   return int((number / 1000) % 10);
 }
 
-
+void throwError() {
+  display.display(0,14);
+  display.display(1,14);
+  display.display(2,14);
+  display.display(3,14);
+  Serial.println("ERROR ! ! !");
+  delay(3000);
+  vibrate(255);
+  delay(500);
+}
